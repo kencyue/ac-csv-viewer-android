@@ -1,10 +1,10 @@
 package com.kencyue.accsvviewer;
 
-import android.app.*;import android.os.*;import android.content.*;import android.net.Uri;import android.webkit.*;import java.io.*;import java.util.Base64;
+import android.app.*;import android.os.*;import android.content.*;import android.net.Uri;import android.webkit.*;import android.view.*;import android.graphics.Insets;import java.io.*;import java.util.Base64;
 
 public class MainActivity extends Activity {
  WebView web; byte[] pendingCsv=null;
- @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(android.graphics.Color.rgb(23,105,170));getWindow().setNavigationBarColor(android.graphics.Color.rgb(244,246,248));web=new WebView(this);setContentView(web);WebSettings s=web.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);web.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){deliver();}});web.addJavascriptInterface(new Bridge(),"AndroidCSV");readIntent(getIntent());web.loadUrl("file:///android_asset/www/index.html");}
+ @Override public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(android.graphics.Color.rgb(23,105,170));getWindow().setNavigationBarColor(android.graphics.Color.rgb(244,246,248));web=new WebView(this);setContentView(web);web.setOnApplyWindowInsetsListener((v,insets)->{Insets bars=insets.getInsets(WindowInsets.Type.systemBars());v.setPadding(bars.left,bars.top,bars.right,bars.bottom);return insets;});web.requestApplyInsets();WebSettings s=web.getSettings();s.setJavaScriptEnabled(true);s.setDomStorageEnabled(true);s.setAllowFileAccess(true);s.setAllowContentAccess(true);web.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView v,String u){deliver();}});web.addJavascriptInterface(new Bridge(),"AndroidCSV");readIntent(getIntent());web.loadUrl("file:///android_asset/www/index.html");}
  @Override protected void onNewIntent(Intent i){super.onNewIntent(i);setIntent(i);readIntent(i);deliver();}
  void readIntent(Intent i){if(i!=null&&Intent.ACTION_VIEW.equals(i.getAction())&&i.getData()!=null){try(InputStream in=getContentResolver().openInputStream(i.getData());ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] buf=new byte[65536];int n;while((n=in.read(buf))>0)out.write(buf,0,n);pendingCsv=out.toByteArray();}catch(Exception e){pendingCsv=null;}}}
  void deliver(){if(pendingCsv==null)return;web.evaluateJavascript("window.__openAndroidCsv&&window.__openAndroidCsv()",null);}
