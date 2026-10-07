@@ -23,7 +23,7 @@ input[type=file]{display:none}.toolbar{display:flex;gap:10px;align-items:center;
 <body>
 <header><div><h1>Panasonic AC CSV Viewer</h1><div class="sub">本機讀取 CSV · 資料不會上傳 · HTML 不內含 CSV 資料</div></div><button id="installApp" class="btn hidden" type="button">安裝 App</button></header>
 <main>
-<section id="loaderCard" class="card"><div id="drop" class="drop"><label class="btn" for="file">選擇 CSV</label><input id="file" type="file" accept=".csv,text/csv"><div style="margin-top:10px">或把 CSV 拖到這裡</div><div class="note">可處理大型 CSV；圖表會自動降採樣以維持流暢。</div></div><div class="progress hidden" id="progress"><div></div></div><div id="status" class="note"></div></section>
+<section id="loaderCard" class="card"><div id="drop" class="drop"><button class="btn" id="appPick" type="button">選擇 CSV</button><input id="file" type="file" accept=".csv,text/csv"><div class="note">從手機選擇冷氣紀錄 CSV；資料只在本機解析。</div></div><div class="progress hidden" id="progress"><div></div></div><div id="status" class="note"></div></section>
 <section id="dashboard" class="hidden"><div class="mobileTabs"><button class="mobileTab on" data-tab="chart">圖表</button><button class="mobileTab" data-tab="fields">欄位</button><button class="mobileTab" data-tab="info">資訊</button><button class="mobileTab reloadTab" id="reloadMobile" type="button">重新載入</button></div>
 <div class="card stats mobilePane" data-pane="info"><button class="btn secondary desktopReload" id="reloadDesktop" type="button">重新載入 CSV</button><div class="stat"><span>檔案</span><b id="sFile" style="font-size:13px;word-break:break-all">—</b></div><div class="stat"><span>有效資料列</span><b id="sRows">0</b></div><div class="stat"><span>欄位數</span><b id="sCols">0</b></div><div class="stat"><span>時間範圍</span><b id="sTime" style="font-size:13px">—</b></div></div>
 <div class="card mobilePane fieldMobile" data-pane="fields"><div class="toolbar"><strong>圖表欄位</strong><button id="mobileFieldBtn" class="mobileFieldBtn" type="button"><span>數值欄位</span><small id="selectedCount">已選 0 項　›</small></button><select id="maxPoints"><option value="1000">1,000 點</option><option value="2500" selected>2,500 點</option><option value="5000">5,000 點</option><option value="10000">10,000 點</option></select><button class="btn" id="allOff">清除選取</button><button class="btn secondary" id="resetZoom">重設縮放</button></div><div id="fields" class="fields"></div><div id="mobileFieldList" class="mobileFieldList"></div></div>
@@ -40,7 +40,7 @@ function modeIcon(m){m=clean(m);if(!m)return '';if(m.includes('冷'))return '❄
 function csvLine(s){let a=[],v='',q=false;for(let i=0;i<s.length;i++){let c=s[i];if(c==='"'){if(q&&s[i+1]==='"'){v+='"';i++}else q=!q}else if(c===','&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}
 ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('drag')}));
 ['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('drag')}));
-drop.addEventListener('drop',e=>{let f=e.dataTransfer.files[0];if(f)load(f)});fileEl.onchange=()=>fileEl.files[0]&&load(fileEl.files[0]);
+drop.addEventListener('drop',e=>{let f=e.dataTransfer.files[0];if(f)load(f)});fileEl.onchange=()=>fileEl.files[0]&&load(fileEl.files[0]);document.getElementById('appPick').onclick=()=>reloadFile();
 async function load(file){
  fileName=file.name;headers=[];rows=[];allRows=[];segments=[];selectedSegment=0;selected.clear();firstTime=lastTime='';dash.classList.add('hidden');progress.classList.remove('hidden');statusEl.textContent='解析中…';
  try{
